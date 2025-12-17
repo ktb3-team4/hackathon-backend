@@ -1,4 +1,4 @@
-name: Spring Push CI/CD (v 1.0)
+name: Spring Push CI/CD (v 1.1)
 
 env:
   IMAGE_TAG: 1.0.0
@@ -93,11 +93,12 @@ jobs:
       - name: Get BE Public IPs
         run: |
           BE_IPS=$(aws ec2 describe-instances \
-            --filters "Name=tag:Role,Values=hackton-be" \
+            --filters "Name=tag:aws:autoscaling:groupName,Values=ou-be" \
             --query "Reservations[].Instances[].PublicIpAddress" \
             --output text)
           echo "BE_IPS=$BE_IPS" >> $GITHUB_ENV
           echo "BE IPs: $BE_IPS"
+
 
 
       - name: Deploy to all BE instances
