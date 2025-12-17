@@ -1,4 +1,4 @@
-name: Spring Push CI/CD (v 1.3)
+name: Spring Push CI/CD (v 1.4)
 
 env:
   IMAGE_TAG: 1.0.0
