@@ -17,12 +17,6 @@ on:
 
 
 jobs:
-
-
-
-
-
-
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -99,11 +93,12 @@ jobs:
       - name: Get BE Public IPs
         run: |
           BE_IPS=$(aws ec2 describe-instances \
-            --instance-ids $BE_INSTANCE_IDS \
+            --filters "Name=tag:Role,Values=hackton-be" \
             --query "Reservations[].Instances[].PublicIpAddress" \
             --output text)
           echo "BE_IPS=$BE_IPS" >> $GITHUB_ENV
-          echo "Healthy BE IPs: $BE_IPS"
+          echo "BE IPs: $BE_IPS"
+
 
       - name: Deploy to all BE instances
         run: |
