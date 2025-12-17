@@ -8,7 +8,10 @@ public final class SecurityPaths {
             "/auth/signup",
             "/auth/login",
             "/auth/kakao/login",
-            "/auth/refresh"
+            "/auth/refresh",
+            "/prompts",
+            "/users",
+            "/targets"
     };
 
     public static final String[] CSRF_IGNORED = {
@@ -17,7 +20,10 @@ public final class SecurityPaths {
             "/auth/kakao/login",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/prompts",
+            "/users",
+            "/targets"
     };
 
     public static final String[] PUBLIC_DOCS = {
