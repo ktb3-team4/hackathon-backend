@@ -23,7 +23,7 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "refresh_token", length = 36)
+    @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 
     @Builder

@@ -4,7 +4,6 @@ import com.example.team4backend.common.error.ErrorCode;
 import com.example.team4backend.domain.User;
 import com.example.team4backend.dto.TokenResponse;
 import com.example.team4backend.exception.BusinessException;
-import com.github.f4b6a3.tsid.TsidCreator;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,8 +52,20 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    public String createRefreshToken() {
-        return TsidCreator.getTsid().toString();
+    public String createRefreshToken(User user) {
+        Instant now = Instant.now();
+        Instant exp = now.plusSeconds(refreshExpSeconds);
+
+        return Jwts.builder()
+                .setSubject(user.getId().toString())
+                .claim("type", "refresh")
+                .claim("email", user.getEmail())
+                .claim("username", user.getUsername())
+                .claim("role", user.getRole().name())
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(exp))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     // 서명 검증 + 파싱
@@ -69,6 +80,20 @@ public class JwtTokenProvider {
             return e.getClaims();
         } catch (JwtException e) {
             throw new BusinessException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+    }
+
+    private Claims parseRefreshClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        } catch (JwtException e) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
 
@@ -90,5 +115,29 @@ public class JwtTokenProvider {
     public String getUsernameFromAccessToken(String accessToken) {
         Claims claims = parseClaims(accessToken);
         return claims.get("username", String.class);
+    }
+
+    public Long getUserIdFromRefreshToken(String refreshToken) {
+        Claims claims = validateRefreshToken(refreshToken);
+        return Long.parseLong(claims.getSubject());
+    }
+
+    public Claims validateRefreshToken(String refreshToken) {
+        Claims claims = parseRefreshClaims(refreshToken);
+
+        if (!"refresh".equals(claims.get("type", String.class))) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        Date expiration = claims.getExpiration();
+        if (expiration != null && expiration.toInstant().isBefore(Instant.now())) {
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED);
+        }
+
+        return claims;
+    }
+
+    public long getRefreshExpSeconds() {
+        return refreshExpSeconds;
     }
 }
