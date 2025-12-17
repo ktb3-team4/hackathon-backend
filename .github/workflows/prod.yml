@@ -12,6 +12,10 @@ on:
   push:
     branches:
       - develop
+      - infra/ci-cd-test
+
+
+
 jobs:
 
 
