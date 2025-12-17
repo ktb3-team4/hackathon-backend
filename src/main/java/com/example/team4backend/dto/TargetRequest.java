@@ -11,11 +11,11 @@ public record TargetRequest(
         @NotBlank(message = "이름은 필수입니다.")
         String name,
 
-        @Schema(description = "관계", example = "엄마")
+        @Schema(description = "관계", example = "1")
         @NotNull
         Long relationshipId,
 
-        @Schema(description = "채팅 스타일", example = "편한 반말")
+        @Schema(description = "채팅 스타일", example = "1")
         @NotNull
         Long chatStyleId,
 
