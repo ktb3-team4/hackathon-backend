@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/hackathon?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  ai:
+    google:
+      genai:
+        api-key: AIzaSyCNqVyyjI9Y8cnduQxZojMBx0_gDbl6VvA
+
+    openai:
+      api-key: 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
+      chat:
+        options:
+          model: gpt-4o-mini
+
+oauth2:
+  kakao:
+    client-id: fbd0c628d45eeec4a488f48cc88e234a
+    redirect-uri: http://localhost:8080/api/auth/kakao/login
+
+app:
+  jwt:
+    secret: R4xZTbNTRBrfBULweNEesNNyz1st8RHvT07ct64iS02
+    access-exp-minutes: 1
+    refresh-exp-seconds: 1209600
