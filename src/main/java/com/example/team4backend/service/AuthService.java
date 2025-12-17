@@ -30,7 +30,7 @@ public class AuthService {
         String email = userInfo.getEmail();
         String nickname = userInfo.getNickname();
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseGet(() -> signUp(email, nickname));
 
         TokenResponse tokenResponse = jwtTokenProvider.createAccessToken(user);
@@ -54,7 +54,7 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (!refreshToken.equals(user.getRefreshToken())) {
@@ -72,7 +72,7 @@ public class AuthService {
 
     @Transactional
     public void logout(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.clearRefreshToken();
