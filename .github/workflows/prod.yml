@@ -39,7 +39,7 @@ jobs:
       - name: Spring Image Build and Push
         run: |
           docker build --platform linux/amd64 \
-            -t ${{ secrets.DOCKER_USERNAME }}/not-me-be:1.0.0 \
+            -t ${{ secrets.IMAGE }} \
             --push .
   
   
