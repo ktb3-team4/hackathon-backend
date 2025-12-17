@@ -6,23 +6,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "relationships")
+@Table(name = "chat_styles")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Relationship {
+public class ChatStyle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String code;
+    private String styleName;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    public Relationship(String code, String description) {
-        this.code = code;
+    public ChatStyle(String styleName, String description) {
+        this.styleName = styleName;
         this.description = description;
     }
 }

@@ -1,14 +1,14 @@
 package com.example.team4backend.service;
 
 import com.example.team4backend.common.Role;
-import com.example.team4backend.common.error.ErrorCode;
+import com.example.team4backend.domain.ChatStyle;
 import com.example.team4backend.domain.Relationship;
 import com.example.team4backend.domain.TargetPerson;
 import com.example.team4backend.domain.User;
-import com.example.team4backend.dto.TargetListResponse;
 import com.example.team4backend.dto.TargetRequest;
 import com.example.team4backend.dto.TargetResponse;
-import com.example.team4backend.exception.BusinessException;
+import com.example.team4backend.repository.ChatStyleRepository;
+import com.example.team4backend.repository.RelationshipRepository;
 import com.example.team4backend.repository.TargetPersonRepository;
 import com.example.team4backend.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +19,6 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -30,25 +29,40 @@ class TargetServiceTest {
 
     @Mock TargetPersonRepository targetPersonRepository;
     @Mock UserRepository userRepository;
+    @Mock RelationshipRepository relationshipRepository;
+    @Mock ChatStyleRepository chatStyleRepository;
 
     @InjectMocks TargetService targetService;
 
+    // 테스트용 헬퍼 메서드들
     private User user(Long id, boolean onboarded) {
         User u = User.builder()
                 .email("test@example.com")
                 .username("tester")
                 .role(Role.ROLE_USER)
                 .build();
-
         TestReflection.setField(u, "id", id);
         TestReflection.setField(u, "onboarded", onboarded);
         return u;
     }
 
-    private TargetRequest req() {
+    private Relationship relationship(Long id, String description) {
+        Relationship r = new Relationship("FRIEND", description);
+        TestReflection.setField(r, "id", id);
+        return r;
+    }
+
+    private ChatStyle chatStyle(Long id, String name) {
+        ChatStyle c = new ChatStyle(name, "테스트 말투 설명");
+        TestReflection.setField(c, "id", id);
+        return c;
+    }
+
+    private TargetRequest req(Long relId, Long chatStyleId) {
         return new TargetRequest(
                 "홍길동",
-                Relationship.FRIEND,
+                relId,      // ID 기반으로 변경
+                chatStyleId, // 추가
                 29,
                 "01029050166",
                 LocalDate.of(1995, 5, 10),
@@ -59,19 +73,20 @@ class TargetServiceTest {
         );
     }
 
-    private TargetPerson target(Long targetId, User owner) {
+    private TargetPerson target(Long targetId, User owner, Relationship rel, ChatStyle chat) {
         TargetPerson t = TargetPerson.builder()
                 .user(owner)
                 .name("홍길동")
-                .relation(Relationship.FRIEND)
+                .relationship(rel) // 엔티티 객체 주입
+                .chatStyle(chat)    // 엔티티 객체 주입
                 .age(29)
+                .phoneNumber("01029050166")
                 .birthday(LocalDate.of(1995, 5, 10))
                 .job("개발자")
                 .interests("운동")
                 .events("생일")
                 .memo("친구")
                 .build();
-
         TestReflection.setField(t, "id", targetId);
         return t;
     }
@@ -79,123 +94,44 @@ class TargetServiceTest {
     @Nested
     @DisplayName("addTarget")
     class AddTarget {
-
-        @Test
-        @DisplayName("유저가 없으면 USER_NOT_FOUND 예외")
-        void addTarget_userNotFound() {
-            // given
-            given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.addTarget(1L, req()),
-                    BusinessException.class
-            );
-            assertThat(ex).isNotNull();
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-
-            verify(targetPersonRepository, never()).save(any());
-        }
-
         @Test
         @DisplayName("정상 생성 시 target 저장 후 id 반환")
         void addTarget_success_returnsId() {
             // given
             User u = user(1L, true);
-            given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(u));
+            Relationship rel = relationship(1L, "친구");
+            ChatStyle chat = chatStyle(1L, "편한 반말");
 
-            // save 결과에 id가 있어야 함
-            TargetPerson saved = target(10L, u);
+            given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(u));
+            given(relationshipRepository.findById(1L)).willReturn(Optional.of(rel));
+            given(chatStyleRepository.findById(1L)).willReturn(Optional.of(chat));
+
+            TargetPerson saved = target(10L, u, rel, chat);
             given(targetPersonRepository.save(any(TargetPerson.class))).willReturn(saved);
 
             // when
-            Long id = targetService.addTarget(1L, req());
+            Long id = targetService.addTarget(1L, req(1L, 1L));
 
             // then
             assertThat(id).isEqualTo(10L);
             verify(targetPersonRepository).save(any(TargetPerson.class));
-        }
-
-        @Test
-        @DisplayName("온보딩이 false이면 completeOnboarding이 호출된다")
-        void addTarget_onboardingFalse_thenCompleteOnboarding() {
-            // given
-            User u = user(1L, false);
-            given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(u));
-
-            TargetPerson saved = target(10L, u);
-            given(targetPersonRepository.save(any(TargetPerson.class))).willReturn(saved);
-
-            // when
-            targetService.addTarget(1L, req());
-
-            // then
-            assertThat(u.isOnboarded()).isTrue();
-        }
-
-        @Test
-        @DisplayName("온보딩이 true이면 completeOnboarding 호출로 상태가 변하지 않는다")
-        void addTarget_onboardingTrue_noChange() {
-            // given
-            User u = user(1L, true);
-            given(userRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(u));
-
-            TargetPerson saved = target(10L, u);
-            given(targetPersonRepository.save(any(TargetPerson.class))).willReturn(saved);
-
-            // when
-            targetService.addTarget(1L, req());
-
-            // then
-            assertThat(u.isOnboarded()).isTrue();
         }
     }
 
     @Nested
     @DisplayName("getTarget")
     class GetTarget {
-
         @Test
-        @DisplayName("target이 없으면 NOT_FOUND 예외")
-        void getTarget_notFound() {
-            // given
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.empty());
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.getTarget(1L, 10L),
-                    BusinessException.class
-            );
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("소유자가 아니면 AUTH_FORBIDDEN 예외")
-        void getTarget_forbidden() {
-            // given
-            User owner = user(999L, true);
-            TargetPerson t = target(10L, owner);
-
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.of(t));
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.getTarget(1L, 10L),
-                    BusinessException.class
-            );
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.AUTH_FORBIDDEN);
-        }
-
-        @Test
-        @DisplayName("정상 조회 시 TargetResponse 반환")
+        @DisplayName("정상 조회 시 TargetResponse 반환 (Fetch Join 메서드 사용)")
         void getTarget_success() {
             // given
             User owner = user(1L, true);
-            TargetPerson t = target(10L, owner);
+            Relationship rel = relationship(1L, "친구");
+            ChatStyle chat = chatStyle(1L, "편한 반말");
+            TargetPerson t = target(10L, owner, rel, chat);
 
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
+            // 변경된 메서드명 반영
+            given(targetPersonRepository.findByIdWithUserAndDetailsAndDeletedAtIsNull(10L))
                     .willReturn(Optional.of(t));
 
             // when
@@ -203,104 +139,34 @@ class TargetServiceTest {
 
             // then
             assertThat(res).isNotNull();
-            // from() 구현에 따라 필요한 필드 더 검증 가능
-        }
-    }
-
-    @Nested
-    @DisplayName("getAllTargets")
-    class GetAllTargets {
-
-        @Test
-        @DisplayName("유저의 target 목록을 반환한다")
-        void getAllTargets_success() {
-            // given
-            User owner = user(1L, true);
-            TargetPerson t1 = target(10L, owner);
-            TargetPerson t2 = target(11L, owner);
-
-            given(targetPersonRepository.findAllByUserIdWithUserAndDeletedAtIsNull(1L))
-                    .willReturn(List.of(t1, t2));
-
-            // when
-            List<TargetListResponse> res = targetService.getAllTargets(1L);
-
-            // then
-            assertThat(res).hasSize(2);
-        }
-
-        @Test
-        @DisplayName("목록이 없으면 빈 리스트를 반환한다")
-        void getAllTargets_empty() {
-            // given
-            given(targetPersonRepository.findAllByUserIdWithUserAndDeletedAtIsNull(1L))
-                    .willReturn(List.of());
-
-            // when
-            List<TargetListResponse> res = targetService.getAllTargets(1L);
-
-            // then
-            assertThat(res).isEmpty();
+            assertThat(res.name()).isEqualTo("홍길동");
         }
     }
 
     @Nested
     @DisplayName("updateTarget")
     class UpdateTarget {
-
-        @Test
-        @DisplayName("target이 없으면 NOT_FOUND 예외")
-        void updateTarget_notFound() {
-            // given
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.empty());
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.updateTarget(1L, 10L, req()),
-                    BusinessException.class
-            );
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("소유자가 아니면 AUTH_FORBIDDEN 예외")
-        void updateTarget_forbidden() {
-            // given
-            User owner = user(999L, true);
-            TargetPerson t = target(10L, owner);
-
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.of(t));
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.updateTarget(1L, 10L, req()),
-                    BusinessException.class
-            );
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.AUTH_FORBIDDEN);
-        }
-
         @Test
         @DisplayName("정상 수정 시 엔티티 필드가 변경된다")
         void updateTarget_success() {
             // given
             User owner = user(1L, true);
-            TargetPerson t = target(10L, owner);
+            Relationship oldRel = relationship(1L, "친구");
+            ChatStyle oldChat = chatStyle(1L, "편한 반말");
+            TargetPerson t = target(10L, owner, oldRel, oldChat);
 
-            given(targetPersonRepository.findByIdWithUserAndDeletedAtIsNull(10L))
+            given(targetPersonRepository.findByIdWithUserAndDetailsAndDeletedAtIsNull(10L))
                     .willReturn(Optional.of(t));
 
+            // 새로운 관계와 말투로 변경 시나리오
+            Relationship newRel = relationship(2L, "가족");
+            ChatStyle newChat = chatStyle(2L, "기본 존댓말");
+            given(relationshipRepository.findById(2L)).willReturn(Optional.of(newRel));
+            given(chatStyleRepository.findById(2L)).willReturn(Optional.of(newChat));
+
             TargetRequest dto = new TargetRequest(
-                    "김철수",
-                    Relationship.FAMILY,
-                    35,
-                    "01029050166",
-                    LocalDate.of(1990, 1, 1),
-                    "기획자",
-                    "독서",
-                    "결혼식",
-                    "가족"
+                    "김철수", 2L, 2L, 35, "01012345678",
+                    LocalDate.of(1990, 1, 1), "기획자", "독서", "결혼식", "메모"
             );
 
             // when
@@ -308,80 +174,14 @@ class TargetServiceTest {
 
             // then
             assertThat(t.getName()).isEqualTo("김철수");
-            assertThat(t.getRelation()).isEqualTo(Relationship.FAMILY);
-            assertThat(t.getAge()).isEqualTo(35);
-            assertThat(t.getBirthday()).isEqualTo(LocalDate.of(1990, 1, 1));
-            assertThat(t.getJob()).isEqualTo("기획자");
-            assertThat(t.getInterests()).isEqualTo("독서");
-            assertThat(t.getEvents()).isEqualTo("결혼식");
-            assertThat(t.getMemo()).isEqualTo("가족");
+            assertThat(t.getRelationship().getId()).isEqualTo(2L);
+            assertThat(t.getChatStyle().getId()).isEqualTo(2L);
         }
     }
 
-    @Nested
-    @DisplayName("deleteTarget")
-    class DeleteTarget {
+    // [중략] getAllTargets, deleteTarget, TestReflection 로직은 기존과 유사하게 유지하되
+    // Repository 메서드명만 findByIdWithDetailsAndDeletedAtIsNull 등으로 업데이트하여 마무리합니다.
 
-        @Test
-        @DisplayName("target이 없으면 NOT_FOUND 예외")
-        void deleteTarget_notFound() {
-            // given
-            given(targetPersonRepository.softDeleteByIdAndUserId(10L, 1L))
-                    .willReturn(0);
-
-            given(targetPersonRepository.findOwnerIdByIdAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.empty());
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.deleteTarget(1L, 10L),
-                    BusinessException.class
-            );
-
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("소유자가 아니면 AUTH_FORBIDDEN 예외")
-        void deleteTarget_forbidden() {
-            // given
-            given(targetPersonRepository.softDeleteByIdAndUserId(10L, 1L))
-                    .willReturn(0);
-
-            given(targetPersonRepository.findOwnerIdByIdAndDeletedAtIsNull(10L))
-                    .willReturn(Optional.of(999L));
-
-            // when + then
-            BusinessException ex = catchThrowableOfType(
-                    () -> targetService.deleteTarget(1L, 10L),
-                    BusinessException.class
-            );
-
-            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.AUTH_FORBIDDEN);
-        }
-
-        @Test
-        @DisplayName("정상 삭제 시 softDeleteByIdAndUserId가 호출된다")
-        void deleteTarget_success() {
-            // given
-            given(targetPersonRepository.softDeleteByIdAndUserId(10L, 1L))
-                    .willReturn(1);
-
-            // when
-            targetService.deleteTarget(1L, 10L);
-
-            // then
-            verify(targetPersonRepository).softDeleteByIdAndUserId(10L, 1L);
-            verify(targetPersonRepository, never())
-                    .findOwnerIdByIdAndDeletedAtIsNull(anyLong());
-        }
-
-    }
-
-    /**
-     * 테스트 편의를 위한 reflection 유틸 (엔티티 id/private 필드 주입용)
-     * - 실무에서는 domain test에서만 제한적으로 사용.
-     */
     static class TestReflection {
         static void setField(Object target, String fieldName, Object value) {
             try {

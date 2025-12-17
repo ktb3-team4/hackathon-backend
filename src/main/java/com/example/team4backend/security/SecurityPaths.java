@@ -18,7 +18,9 @@ public final class SecurityPaths {
             "/auth/logout",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/targets",
+            "/users/**"
     };
 
     public static final String[] PUBLIC_DOCS = {

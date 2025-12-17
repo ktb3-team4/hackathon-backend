@@ -1,6 +1,5 @@
 package com.example.team4backend.dto;
 
-import com.example.team4backend.domain.Relationship;
 import com.example.team4backend.domain.TargetPerson;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,8 +9,11 @@ public record TargetResponse(
         @Schema(description = "이름", example = "홍길동")
         String name,
 
-        @Schema(description = "관계 (FRIEND, FAMILY, COWORKER 등)", example = "FRIEND")
-        Relationship relation,
+        @Schema(description = "관계", example = "엄마")
+        String relationName,
+
+        @Schema(description = "채팅 스타일", example = "편한 반말")
+        String chatStyleName,
 
         @Schema(description = "나이", example = "25")
         Integer age,
@@ -37,7 +39,8 @@ public record TargetResponse(
     public static TargetResponse from(TargetPerson target) {
         return new TargetResponse(
                 target.getName(),
-                target.getRelation(),
+                target.getRelationship().getDescription(),
+                target.getChatStyle().getStyleName(),
                 target.getAge(),
                 target.getPhoneNumber(),
                 target.getBirthday(),

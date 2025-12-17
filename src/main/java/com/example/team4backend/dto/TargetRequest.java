@@ -1,6 +1,5 @@
 package com.example.team4backend.dto;
 
-import com.example.team4backend.domain.Relationship;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,9 +11,13 @@ public record TargetRequest(
         @NotBlank(message = "이름은 필수입니다.")
         String name,
 
-        @Schema(description = "관계 (FRIEND, FAMILY, COWORKER 등)", example = "FRIEND")
-        @NotNull(message = "관계 설정은 필수입니다.")
-        Relationship relation,
+        @Schema(description = "관계", example = "엄마")
+        @NotNull
+        Long relationshipId,
+
+        @Schema(description = "채팅 스타일", example = "편한 반말")
+        @NotNull
+        Long chatStyleId,
 
         @Schema(description = "나이", example = "25")
         Integer age,

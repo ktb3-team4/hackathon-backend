@@ -3,7 +3,6 @@ package com.example.team4backend.domain;
 import com.example.team4backend.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,10 +24,6 @@ public class TargetPerson extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Relationship relation;
-
     private Integer age;
 
     @Column(nullable = false)
@@ -46,14 +41,21 @@ public class TargetPerson extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String memo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relationship_id", nullable = false)
+    private Relationship relationship;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_style_id")
+    private ChatStyle chatStyle;
+
     private Instant deletedAt;
 
     @Builder
-    public TargetPerson(User user, String name, Relationship relation, Integer age, String phoneNumber,  LocalDate birthday, String job, String interests,
+    public TargetPerson(User user, String name, Relationship relationship, ChatStyle chatStyle, Integer age, String phoneNumber,  LocalDate birthday, String job, String interests,
                         String events, String memo) {
         this.user = user;
         this.name = name;
-        this.relation = relation;
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.birthday = birthday;
@@ -61,12 +63,26 @@ public class TargetPerson extends BaseTimeEntity {
         this.interests = interests;
         this.events = events;
         this.memo = memo;
+        this.relationship = relationship;
+        this.chatStyle = chatStyle;
+        this.deletedAt = null;
     }
 
-    public void update(String name, Relationship relation, Integer age, String phoneNumber,
-                       LocalDate birthday, String job, String interests, String events, String memo) {
+    public void update(
+            String name,
+            Relationship relationship,
+            ChatStyle chatStyle,
+            Integer age,
+            String phoneNumber,
+            LocalDate birthday,
+            String job,
+            String interests,
+            String events,
+            String memo
+    ) {
         this.name = name;
-        this.relation = relation;
+        this.relationship = relationship;
+        this.chatStyle = chatStyle;
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.birthday = birthday;
