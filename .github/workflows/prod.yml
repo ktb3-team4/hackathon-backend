@@ -1,4 +1,4 @@
-name: Spring Push CI/CD (v 1.1)
+name: Spring Push CI/CD (v 1.4)
 
 env:
   IMAGE_TAG: 1.0.0
@@ -57,13 +57,13 @@ jobs:
       
       
 
-      # 2. 깃허브 액션에서 env 생성
-      - name: Create .env file
-        run: |
-          echo "RDS_DNS=${{ secrets.RDS_DNS }}" >> .env
-          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
-          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
-          echo "IMAGE=${{ secrets.IMAGE }}" >> .env    
+#      # 2. 깃허브 액션에서 env 생성
+#      - name: Create .env file
+#        run: |
+#          echo "RDS_DNS=${{ secrets.RDS_DNS }}" >> .env
+#          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+#          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
+#          echo "IMAGE=${{ secrets.IMAGE }}" >> .env
 
       # 3. 깃허브 액션에 AWS CLI 설치
       - name: Install AWS CLI
@@ -107,8 +107,8 @@ jobs:
             echo "Deploying to $IP ..."
 
             # env 파일 전송
-            scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa .env \
-              ubuntu@$IP:/home/ubuntu/AWS_DOCKER/be
+            #scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa .env \
+            #  ubuntu@$IP:/home/ubuntu/AWS_DOCKER/be
 
             # Docker 배포 (heredoc 제거)
             ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@$IP \
