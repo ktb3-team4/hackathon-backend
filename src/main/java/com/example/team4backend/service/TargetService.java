@@ -2,6 +2,7 @@ package com.example.team4backend.service;
 
 import com.example.team4backend.common.error.ErrorCode;
 import com.example.team4backend.domain.ChatStyle;
+import com.example.team4backend.domain.Event;
 import com.example.team4backend.domain.Relationship;
 import com.example.team4backend.domain.TargetPerson;
 import com.example.team4backend.domain.User;
@@ -10,6 +11,7 @@ import com.example.team4backend.dto.TargetRequest;
 import com.example.team4backend.dto.TargetResponse;
 import com.example.team4backend.exception.BusinessException;
 import com.example.team4backend.repository.ChatStyleRepository;
+import com.example.team4backend.repository.EventRepository;
 import com.example.team4backend.repository.RelationshipRepository;
 import com.example.team4backend.repository.TargetPersonRepository;
 import com.example.team4backend.repository.UserRepository;
@@ -27,6 +29,7 @@ public class TargetService {
     private final UserRepository userRepository;
     private final RelationshipRepository relationshipRepository;
     private final ChatStyleRepository chatStyleRepository;
+    private final EventRepository eventRepository;
 
     @Transactional
     public Long addTarget(Long userId, TargetRequest dto) {
@@ -47,17 +50,28 @@ public class TargetService {
                 .age(dto.age())
                 .phoneNumber(dto.phoneNumber())
                 .birthday(dto.birthday())
-                .job(dto.job())
                 .interests(dto.interests())
-                .events(dto.events())
-                .memo(dto.memo())
                 .build();
+
+        TargetPerson savedTarget = targetPersonRepository.save(target);
+
+        // 이벤트 저장
+        if (dto.events() != null && !dto.events().isEmpty()) {
+            dto.events().forEach(eventDto -> {
+                Event event = Event.builder()
+                        .targetPerson(savedTarget)
+                        .date(eventDto.date())
+                        .description(eventDto.description())
+                        .build();
+                savedTarget.addEvent(event);
+            });
+        }
 
         if (!user.isOnboarded()) {
             user.completeOnboarding();
         }
 
-        return targetPersonRepository.save(target).getId();
+        return savedTarget.getId();
     }
 
     @Transactional(readOnly = true)
@@ -108,11 +122,21 @@ public class TargetService {
                 dto.age(),
                 dto.phoneNumber(),
                 dto.birthday(),
-                dto.job(),
-                dto.interests(),
-                dto.events(),
-                dto.memo()
-                );
+                dto.interests()
+        );
+
+        // 기존 이벤트 삭제 후 새로 추가
+        target.clearEvents();
+        if (dto.events() != null && !dto.events().isEmpty()) {
+            dto.events().forEach(eventDto -> {
+                Event event = Event.builder()
+                        .targetPerson(target)
+                        .date(eventDto.date())
+                        .description(eventDto.description())
+                        .build();
+                target.addEvent(event);
+            });
+        }
     }
 
     @Transactional
