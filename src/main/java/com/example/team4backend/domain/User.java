@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.time.Instant;
 
 @Table(name = "users")
 @Entity
@@ -23,8 +24,14 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "refresh_token", length = 36)
+    @Column(name = "refresh_token", length = 512)
     private String refreshToken;
+
+    @Column(name = "is_onboarded", nullable = false)
+    private boolean onboarded = false;
+
+    private Instant deletedAt;
+
 
     @Builder
     public User(String email, String username, Role role) {
@@ -34,10 +41,29 @@ public class User extends BaseTimeEntity {
     }
 
     public void updateRefreshToken(String newRefreshToken) {
+        if (newRefreshToken == null || newRefreshToken.isBlank()) {
+            return;
+        }
         this.refreshToken = newRefreshToken;
     }
 
     public void clearRefreshToken() {
-        this.refreshToken = null;
+        if(refreshToken != null) {
+            refreshToken = null;
+        }
+    }
+
+    public void completeOnboarding() {
+        if (this.onboarded) {
+            return;
+        }
+        this.onboarded = true;
+    }
+
+    public void delete() {
+        if (this.deletedAt != null) {
+            return;
+        }
+        this.deletedAt = Instant.now();
     }
 }
