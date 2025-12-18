@@ -2,9 +2,12 @@ package com.example.team4backend.service;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-//@Service
+@Qualifier
+@Service
 public class GeminiService implements AiService {
 
     private final Client client;

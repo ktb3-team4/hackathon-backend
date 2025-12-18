@@ -2,11 +2,13 @@ package com.example.team4backend.service;
 
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 
+@Primary
 @Service
 public class OpenAiService implements AiService {
 
