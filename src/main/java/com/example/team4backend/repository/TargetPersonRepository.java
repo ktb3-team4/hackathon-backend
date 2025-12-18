@@ -37,4 +37,9 @@ public interface TargetPersonRepository extends JpaRepository<TargetPerson, Long
     int updateLastMessageDate(@Param("targetId") Long targetId,
                               @Param("userId") Long userId,
                               @Param("date") Instant date);
+
+    @Modifying
+    @Query("UPDATE TargetPerson t SET t.recommendedOpening = :message WHERE t.id = :targetId AND t.deletedAt IS NULL")
+    int updateRecommendedOpening(@Param("targetId") Long targetId,
+                                  @Param("message") String message);
 }

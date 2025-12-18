@@ -49,6 +49,9 @@ public class TargetPerson extends BaseTimeEntity {
 
     private Instant lastMessageDate;
 
+    @Column(columnDefinition = "TEXT")
+    private String recommendedOpening;
+
     private Instant deletedAt;
 
     @Builder
