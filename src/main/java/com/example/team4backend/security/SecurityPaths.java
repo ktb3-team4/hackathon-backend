@@ -12,8 +12,7 @@ public final class SecurityPaths {
             "/prompts",
             "/relationships",
             "/chat-styles",
-            "/health",
-            "/"
+            "/health"
     };
 
     public static final String[] CSRF_IGNORED = {
@@ -28,7 +27,8 @@ public final class SecurityPaths {
             "/prompts",
             "/users",
             "/targets",
-            "/relationships"
+            "/relationships",
+            "/health"
     };
 
     public static final String[] PUBLIC_DOCS = {

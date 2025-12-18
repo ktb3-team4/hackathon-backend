@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.List;
 
@@ -30,4 +31,10 @@ public interface TargetPersonRepository extends JpaRepository<TargetPerson, Long
 
     @Query("SELECT t.user.id FROM TargetPerson t WHERE t.id = :id AND t.deletedAt IS NULL")
     Optional<Long> findOwnerIdByIdAndDeletedAtIsNull(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE TargetPerson t SET t.lastMessageDate = :date WHERE t.id = :targetId AND t.user.id = :userId AND t.deletedAt IS NULL")
+    int updateLastMessageDate(@Param("targetId") Long targetId,
+                              @Param("userId") Long userId,
+                              @Param("date") Instant date);
 }

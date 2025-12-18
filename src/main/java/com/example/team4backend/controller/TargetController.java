@@ -73,4 +73,14 @@ public class TargetController {
         targetService.deleteTarget(userDetails.getId(), targetId);
         return ResponseEntity.ok(ApiResult.ok("대상자 정보가 삭제되었습니다."));
     }
+
+    @Operation(summary = "최근 메시지 보낸날짜 갱신", description = "메시지를 보내면 최근 메시지를 보낸 날짜를 갱신합니다.")
+    @PutMapping("/{targetId}/message-date")
+    public ResponseEntity<ApiResult<Void>> updateLastMessageDate(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long targetId
+    ) {
+        targetService.updateLastMessageDate(userDetails.getId(), targetId);
+        return ResponseEntity.ok(ApiResult.ok("최근 메시지 보낸 날짜가 업데이트되었습니다."));
+    }
 }

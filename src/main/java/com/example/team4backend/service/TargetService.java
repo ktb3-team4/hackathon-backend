@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -149,5 +150,19 @@ public class TargetService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
         throw new BusinessException(ErrorCode.AUTH_FORBIDDEN);
+    }
+
+    @Transactional
+    public void updateLastMessageDate(Long userId, Long targetId) {
+        int updated = targetPersonRepository.updateLastMessageDate(
+                targetId,
+                userId,
+                Instant.now()
+        );
+
+        if (updated == 0) {
+            // targetId가 존재하지 않거나 userId가 일치하지 않음
+            throw new BusinessException(ErrorCode.NOT_FOUND);
+        }
     }
 }
