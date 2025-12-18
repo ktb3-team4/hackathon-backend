@@ -47,6 +47,8 @@ public class TargetPerson extends BaseTimeEntity {
     @JoinColumn(name = "chat_style_id")
     private ChatStyle chatStyle;
 
+    private Instant lastMessageDate;
+
     private Instant deletedAt;
 
     @Builder
