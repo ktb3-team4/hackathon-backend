@@ -31,6 +31,9 @@ public class ChatStyleDataRunner implements CommandLineRunner {
 //                new ChatStyle("농담 섞인 편안한 말투", "가벼운 웃음 포인트가 있는 스타일"),
 //                new ChatStyle("부드러운 존댓말", "말끝을 완화해 정중함을 강조한 말투"),
 //                new ChatStyle("차분한 설명형 말투", "또박또박 설명하듯 말하는 스타일"),
+//                new ChatStyle("농담 섞인 편안한 말투", "가벼운 웃음 포인트가 있는 스타일"),
+//                new ChatStyle("부드러운 존댓말", "말끝을 완화해 정중함을 강조한 말투"),
+//                new ChatStyle("차분한 설명형 말투", "또박또박 설명하듯 말하는 스타일"),
 //                new ChatStyle("보고·전달형 말투", "사실 위주로 간단히 전달하는 스타일"),
 //                new ChatStyle("감사·존중 강조 말투", "고마움과 존중 표현이 자주 들어가는 말투"),
 //                new ChatStyle("조심스러운 요청형 말투", "부탁이나 제안을 할 때 사용하는 말투")
