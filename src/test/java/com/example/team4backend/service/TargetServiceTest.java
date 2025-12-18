@@ -34,7 +34,6 @@ class TargetServiceTest {
     @Mock UserRepository userRepository;
     @Mock RelationshipRepository relationshipRepository;
     @Mock ChatStyleRepository chatStyleRepository;
-    @Mock EventRepository eventRepository;
 
     @InjectMocks TargetService targetService;
 
