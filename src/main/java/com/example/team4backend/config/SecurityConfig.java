@@ -33,19 +33,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        CookieCsrfTokenRepository csrfTokenRepository =
-                CookieCsrfTokenRepository.withHttpOnlyFalse();
-        csrfTokenRepository.setCookiePath("/");
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName(null);
+//        CookieCsrfTokenRepository csrfTokenRepository =
+//                CookieCsrfTokenRepository.withHttpOnlyFalse();
+//        csrfTokenRepository.setCookiePath("/");
+//        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        //requestHandler.setCsrfRequestAttributeName(null);
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(csrfTokenRepository)
-                        .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers(CSRF_IGNORED)
-                )
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(csrfTokenRepository)
+//                        .csrfTokenRequestHandler(requestHandler)
+//                        .ignoringRequestMatchers(CSRF_IGNORED)
+//                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
