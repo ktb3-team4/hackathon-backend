@@ -44,15 +44,12 @@ class TargetPersonTest {
             TargetPerson targetPerson = TargetPerson.builder()
                     .user(user)
                     .name("홍길동")
-                    .relationship(relationship) // Enum 대신 Entity 사용
-                    .chatStyle(chatStyle)       // 대화 형식 엔티티 추가
+                    .relationship(relationship)
+                    .chatStyle(chatStyle)
                     .age(29)
                     .phoneNumber("01029050166")
                     .birthday(birthday)
-                    .job("개발자")
                     .interests("운동, 음악")
-                    .events("생일")
-                    .memo("고등학교 친구")
                     .build();
 
             // then
@@ -64,10 +61,8 @@ class TargetPersonTest {
             assertThat(targetPerson.getAge()).isEqualTo(29);
             assertThat(targetPerson.getPhoneNumber()).isEqualTo("01029050166");
             assertThat(targetPerson.getBirthday()).isEqualTo(birthday);
-            assertThat(targetPerson.getJob()).isEqualTo("개발자");
             assertThat(targetPerson.getInterests()).isEqualTo("운동, 음악");
-            assertThat(targetPerson.getEvents()).isEqualTo("생일");
-            assertThat(targetPerson.getMemo()).isEqualTo("고등학교 친구");
+            assertThat(targetPerson.getEvents()).isEmpty();
             assertThat(targetPerson.getDeletedAt()).isNull();
         }
     }
@@ -92,10 +87,7 @@ class TargetPersonTest {
                     .age(29)
                     .phoneNumber("01029050166")
                     .birthday(LocalDate.of(1995, 5, 10))
-                    .job("개발자")
                     .interests("운동")
-                    .events("생일")
-                    .memo("친구")
                     .build();
 
             Relationship newRel = createRelationship("FAMILY", "가족");
@@ -110,10 +102,7 @@ class TargetPersonTest {
                     35,
                     "01012345678",
                     newBirthday,
-                    "기획자",
-                    "독서",
-                    "결혼식",
-                    "가족"
+                    "독서"
             );
 
             // then
@@ -123,10 +112,81 @@ class TargetPersonTest {
             assertThat(targetPerson.getAge()).isEqualTo(35);
             assertThat(targetPerson.getPhoneNumber()).isEqualTo("01012345678");
             assertThat(targetPerson.getBirthday()).isEqualTo(newBirthday);
-            assertThat(targetPerson.getJob()).isEqualTo("기획자");
             assertThat(targetPerson.getInterests()).isEqualTo("독서");
-            assertThat(targetPerson.getEvents()).isEqualTo("결혼식");
-            assertThat(targetPerson.getMemo()).isEqualTo("가족");
+        }
+
+        @Test
+        @DisplayName("이벤트 추가가 정상적으로 동작한다")
+        void addEvent_success() {
+            // given
+            User user = createUser();
+            Relationship relationship = createRelationship("FRIEND", "친구");
+            ChatStyle chatStyle = createChatStyle("편한 반말", "반말 말투");
+
+            TargetPerson targetPerson = TargetPerson.builder()
+                    .user(user)
+                    .name("홍길동")
+                    .relationship(relationship)
+                    .chatStyle(chatStyle)
+                    .age(29)
+                    .phoneNumber("01029050166")
+                    .birthday(LocalDate.of(1995, 5, 10))
+                    .interests("운동")
+                    .build();
+
+            Event event = Event.builder()
+                    .targetPerson(targetPerson)
+                    .date(LocalDate.of(2025, 1, 10))
+                    .description("결혼기념일")
+                    .build();
+
+            // when
+            targetPerson.addEvent(event);
+
+            // then
+            assertThat(targetPerson.getEvents()).hasSize(1);
+            assertThat(targetPerson.getEvents().get(0).getDescription()).isEqualTo("결혼기념일");
+        }
+
+        @Test
+        @DisplayName("이벤트 전체 삭제가 정상적으로 동작한다")
+        void clearEvents_success() {
+            // given
+            User user = createUser();
+            Relationship relationship = createRelationship("FRIEND", "친구");
+            ChatStyle chatStyle = createChatStyle("편한 반말", "반말 말투");
+
+            TargetPerson targetPerson = TargetPerson.builder()
+                    .user(user)
+                    .name("홍길동")
+                    .relationship(relationship)
+                    .chatStyle(chatStyle)
+                    .age(29)
+                    .phoneNumber("01029050166")
+                    .birthday(LocalDate.of(1995, 5, 10))
+                    .interests("운동")
+                    .build();
+
+            Event event1 = Event.builder()
+                    .targetPerson(targetPerson)
+                    .date(LocalDate.of(2025, 1, 10))
+                    .description("결혼기념일")
+                    .build();
+
+            Event event2 = Event.builder()
+                    .targetPerson(targetPerson)
+                    .date(LocalDate.of(2025, 2, 14))
+                    .description("생일")
+                    .build();
+
+            targetPerson.addEvent(event1);
+            targetPerson.addEvent(event2);
+
+            // when
+            targetPerson.clearEvents();
+
+            // then
+            assertThat(targetPerson.getEvents()).isEmpty();
         }
     }
 }

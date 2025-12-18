@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "target_people")
@@ -30,16 +32,12 @@ public class TargetPerson extends BaseTimeEntity {
     private String phoneNumber;
 
     private LocalDate birthday;
-    private String job;
 
     @Column(columnDefinition = "TEXT")
     private String interests;
 
-    @Column(columnDefinition = "TEXT")
-    private String events;
-
-    @Column(columnDefinition = "TEXT")
-    private String memo;
+    @OneToMany(mappedBy = "targetPerson", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Event> events = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "relationship_id", nullable = false)
@@ -52,20 +50,24 @@ public class TargetPerson extends BaseTimeEntity {
     private Instant deletedAt;
 
     @Builder
-    public TargetPerson(User user, String name, Relationship relationship, ChatStyle chatStyle, Integer age, String phoneNumber,  LocalDate birthday, String job, String interests,
-                        String events, String memo) {
+    public TargetPerson(User user, String name, Relationship relationship, ChatStyle chatStyle, Integer age, String phoneNumber, LocalDate birthday, String interests) {
         this.user = user;
         this.name = name;
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.birthday = birthday;
-        this.job = job;
         this.interests = interests;
-        this.events = events;
-        this.memo = memo;
         this.relationship = relationship;
         this.chatStyle = chatStyle;
         this.deletedAt = null;
+    }
+
+    public void addEvent(Event event) {
+        this.events.add(event);
+    }
+
+    public void clearEvents() {
+        this.events.clear();
     }
 
     public void update(
@@ -75,10 +77,7 @@ public class TargetPerson extends BaseTimeEntity {
             Integer age,
             String phoneNumber,
             LocalDate birthday,
-            String job,
-            String interests,
-            String events,
-            String memo
+            String interests
     ) {
         this.name = name;
         this.relationship = relationship;
@@ -86,9 +85,6 @@ public class TargetPerson extends BaseTimeEntity {
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.birthday = birthday;
-        this.job = job;
         this.interests = interests;
-        this.events = events;
-        this.memo = memo;
     }
 }

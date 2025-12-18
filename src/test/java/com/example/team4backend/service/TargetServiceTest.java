@@ -5,9 +5,11 @@ import com.example.team4backend.domain.ChatStyle;
 import com.example.team4backend.domain.Relationship;
 import com.example.team4backend.domain.TargetPerson;
 import com.example.team4backend.domain.User;
+import com.example.team4backend.dto.EventRequest;
 import com.example.team4backend.dto.TargetRequest;
 import com.example.team4backend.dto.TargetResponse;
 import com.example.team4backend.repository.ChatStyleRepository;
+import com.example.team4backend.repository.EventRepository;
 import com.example.team4backend.repository.RelationshipRepository;
 import com.example.team4backend.repository.TargetPersonRepository;
 import com.example.team4backend.repository.UserRepository;
@@ -19,6 +21,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -31,6 +34,7 @@ class TargetServiceTest {
     @Mock UserRepository userRepository;
     @Mock RelationshipRepository relationshipRepository;
     @Mock ChatStyleRepository chatStyleRepository;
+    @Mock EventRepository eventRepository;
 
     @InjectMocks TargetService targetService;
 
@@ -61,15 +65,16 @@ class TargetServiceTest {
     private TargetRequest req(Long relId, Long chatStyleId) {
         return new TargetRequest(
                 "홍길동",
-                relId,      // ID 기반으로 변경
-                chatStyleId, // 추가
+                relId,
+                chatStyleId,
                 29,
                 "01029050166",
                 LocalDate.of(1995, 5, 10),
-                "개발자",
                 "운동, 음악",
-                "생일",
-                "메모"
+                List.of(
+                        new EventRequest(LocalDate.of(2025, 1, 10), "결혼기념일"),
+                        new EventRequest(LocalDate.of(2025, 2, 14), "생일")
+                )
         );
     }
 
@@ -77,15 +82,12 @@ class TargetServiceTest {
         TargetPerson t = TargetPerson.builder()
                 .user(owner)
                 .name("홍길동")
-                .relationship(rel) // 엔티티 객체 주입
-                .chatStyle(chat)    // 엔티티 객체 주입
+                .relationship(rel)
+                .chatStyle(chat)
                 .age(29)
                 .phoneNumber("01029050166")
                 .birthday(LocalDate.of(1995, 5, 10))
-                .job("개발자")
                 .interests("운동")
-                .events("생일")
-                .memo("친구")
                 .build();
         TestReflection.setField(t, "id", targetId);
         return t;
@@ -166,7 +168,8 @@ class TargetServiceTest {
 
             TargetRequest dto = new TargetRequest(
                     "김철수", 2L, 2L, 35, "01012345678",
-                    LocalDate.of(1990, 1, 1), "기획자", "독서", "결혼식", "메모"
+                    LocalDate.of(1990, 1, 1), "독서",
+                    List.of(new EventRequest(LocalDate.of(2025, 3, 1), "결혼식"))
             );
 
             // when
