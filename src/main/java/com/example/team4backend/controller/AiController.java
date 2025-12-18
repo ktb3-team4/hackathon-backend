@@ -22,6 +22,7 @@ public class AiController {
         System.out.println("=== AiController.chat() 호출됨 === userInput: " + promptRequest.getUserInput());
         String aiResponse = aiService.generateContent(promptRequest.getUserInput());
         System.out.println("=== AiController.chat() 응답 완료 ===");
+
         return ResponseEntity.ok(ApiResult.ok(aiResponse));
     }
 }
