@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 
 public record TargetListResponse(
+        @Schema(description = "대상자 ID", example = "1")
+        Long targetId,
+
         @Schema(description = "이름", example = "홍길동")
         String name,
 
@@ -13,6 +16,7 @@ public record TargetListResponse(
 ){
     public static TargetListResponse from(TargetPerson target) {
         return new TargetListResponse(
+                target.getId(),
                 target.getName(),
                 target.getRelationship().getDescription()
         );
