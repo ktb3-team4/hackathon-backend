@@ -11,7 +11,9 @@ public final class SecurityPaths {
             "/auth/refresh",
             "/prompts",
             "/relationships",
-            "/chat-styles"
+            "/chat-styles",
+            "/health",
+            "/"
     };
 
     public static final String[] CSRF_IGNORED = {
