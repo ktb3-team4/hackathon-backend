@@ -14,6 +14,9 @@ public record MessageListResponse(
         @Schema(description = "대상자 이름", example = "홍길동")
         String name,
 
+        @Schema(description = "전화번호", example = "01029050166")
+        String phoneNumber,
+
         @Schema(description = "추천 서두", example = "안녕하세요! 오랜만이에요")
         String recommendedOpening,
 
@@ -25,6 +28,7 @@ public record MessageListResponse(
         return new MessageListResponse(
                 target.getId(),
                 target.getName(),
+                target.getPhoneNumber(),
                 recommendedOpening,
                 target.getLastMessageDate()
         );
