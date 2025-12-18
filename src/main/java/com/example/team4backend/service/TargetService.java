@@ -48,6 +48,7 @@ public class TargetService {
                 .name(dto.name())
                 .relationship(relationship)
                 .chatStyle(chatStyle)
+                .chatContent(dto.chatContent())
                 .age(dto.age())
                 .phoneNumber(dto.phoneNumber())
                 .birthday(dto.birthday())

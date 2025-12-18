@@ -24,9 +24,6 @@ public class KakaoOAuthService {
     @Value("${oauth2.kakao.client-id}")
     private String clientId;
 
-    @Value("${oauth2.kakao.client-secret:}")
-    private String clientSecret;
-
     @Value("${oauth2.kakao.redirect-uri}")
     private String redirectUri;
 
@@ -43,9 +40,6 @@ public class KakaoOAuthService {
         body.add("client_id", clientId);
         body.add("redirect_uri", redirectUri);
         body.add("code", code);
-        if (clientSecret != null && !clientSecret.isBlank()) {
-            body.add("client_secret", clientSecret);
-        }
 
         try {
             return webClient.post()

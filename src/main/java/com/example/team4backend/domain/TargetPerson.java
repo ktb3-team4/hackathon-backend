@@ -52,10 +52,14 @@ public class TargetPerson extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String recommendedOpening;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String chatContent;
+
     private Instant deletedAt;
 
     @Builder
-    public TargetPerson(User user, String name, Relationship relationship, ChatStyle chatStyle, Integer age, String phoneNumber, LocalDate birthday, String interests) {
+    public TargetPerson(User user, String name, Relationship relationship, ChatStyle chatStyle, String chatContent,
+                        Integer age, String phoneNumber, LocalDate birthday, String interests) {
         this.user = user;
         this.name = name;
         this.age = age;
@@ -64,6 +68,7 @@ public class TargetPerson extends BaseTimeEntity {
         this.interests = interests;
         this.relationship = relationship;
         this.chatStyle = chatStyle;
+        this.chatContent = chatContent;
         this.deletedAt = null;
     }
 

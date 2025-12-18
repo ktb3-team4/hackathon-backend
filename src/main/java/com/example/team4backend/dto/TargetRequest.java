@@ -21,6 +21,8 @@ public record TargetRequest(
         @NotNull(message = "채팅 스타일은 필수입니다.")
         Long chatStyleId,
 
+        String chatContent,
+
         @Schema(description = "나이", example = "25")
         Integer age,
 
