@@ -6,6 +6,7 @@ import com.example.team4backend.domain.Event;
 import com.example.team4backend.domain.Relationship;
 import com.example.team4backend.domain.TargetPerson;
 import com.example.team4backend.domain.User;
+import com.example.team4backend.dto.FastApiJobRequest;
 import com.example.team4backend.dto.TargetListResponse;
 import com.example.team4backend.dto.TargetRequest;
 import com.example.team4backend.dto.TargetResponse;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -31,6 +33,7 @@ public class TargetService {
     private final RelationshipRepository relationshipRepository;
     private final ChatStyleRepository chatStyleRepository;
     private final EventRepository eventRepository;
+    private final MessageGenerationService messageGenerationService;
 
     @Transactional
     public Long addTarget(Long userId, TargetRequest dto) {
@@ -71,6 +74,19 @@ public class TargetService {
         if (!user.isOnboarded()) {
             user.completeOnboarding();
         }
+
+        // 비동기로 메시지 생성 및 저장
+        FastApiJobRequest jobRequest = FastApiJobRequest.from(
+                savedTarget.getName(),
+                relationship.getDescription(),
+                chatStyle.getDescription(),
+                dto.age(),
+                dto.birthday(),
+                null, // lastContactDate는 등록 시점에는 없음
+                dto.interests(),
+                dto.events()
+        );
+        messageGenerationService.generateAndSaveMessage(savedTarget.getId(), jobRequest);
 
         return savedTarget.getId();
     }
