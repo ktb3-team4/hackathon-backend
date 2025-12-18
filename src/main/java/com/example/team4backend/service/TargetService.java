@@ -32,7 +32,6 @@ public class TargetService {
     private final UserRepository userRepository;
     private final RelationshipRepository relationshipRepository;
     private final ChatStyleRepository chatStyleRepository;
-    private final EventRepository eventRepository;
     private final MessageGenerationService messageGenerationService;
 
     @Transactional
